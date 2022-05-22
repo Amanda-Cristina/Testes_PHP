@@ -52,7 +52,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
                 return  $statement -> fetchAll(PDO::FETCH_CLASS);
             }
             catch(Exception $e){
-                throw new Exception($e->getMessage());
+                throw new Exception("Falha na busca do usuário no banco ->" . $e->getMessage());
             }
 
         }
@@ -66,7 +66,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
             }
             catch(Exception $e){
                 //throw new Exception($e->getMessage());
-                echo 'Falha para cancelar o cadastro: ' . $e->getMessage();
+                echo 'Falha para cancelar o cadastro -> ' . $e->getMessage();
             }
 
         }
@@ -74,7 +74,6 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
         public function insert(){
            
             $this -> attributes = array_diff( $this -> attributes, ['id'] );
-            var_dump($this -> attributes);
             $params = array_map(fn($attr) => ":$attr", $this -> attributes);
 
             $sql =  sprintf(
@@ -84,7 +83,6 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
                 implode(',', $params) 
             );
             
-
             try{
                 $statement = $this -> bd -> prepare($sql);
               
@@ -96,15 +94,13 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
                 
             }
             catch(Exception $e){
-                throw new Exception ('Falha na inserção dos dados no banco: ' . $e->getMessage());
+                throw new Exception ('Falha na inserção dos dados no banco -> ' . $e->getMessage());
                 
             }
             
         }
 
-        public static function prepare($sql){
-
-        }
+        
  
         public function update(){
 
@@ -124,12 +120,11 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
 
                 foreach($this -> attributes as $attribute){
                     $statement -> bindValue(":$attribute", $this ->{$attribute});}
-
+                var_dump($statement);
                 $statement -> execute(); //bindParam com vetor
             }
             catch(Exception $e){
-                //throw new Exception($e->getMessage());
-                echo 'Falha na atualização dos dados no banco: ' . $e->getMessage();
+                throw new Exception('Falha na atualização dos dados no banco: ' . $e->getMessage());
             }
 
         }
@@ -143,8 +138,11 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
             return $this->serializer->deserialize($dados, $classe, 'json');
         }
 
+        abstract public function validatesInsert($object);
 
-        public function validates($object){
+        abstract public function validatesUpdate($object);
+
+        public function validatesParameters($object){
             $errors=array();
 
             $this->validator = Validation::createValidatorBuilder()
@@ -159,16 +157,7 @@ use Doctrine\Common\Annotations\AnnotationRegistry;
                 array_push($errors, $this->get_violations($errors_form));
                 return $errors;
             }
-            if (!empty($object -> selectByParameter('email', $object -> email))){
-                array_push($errors, 'Este email já está cadastrado');
-                var_dump($errors);
-                return [$errors];
-                }
-
-            if (!empty($object -> selectByParameter('cpf', $object -> cpf))){
-                array_push($errors,'O usuário com este cpf já está cadastrado');
-                return [$errors];
-                }
+           
                 
             return $errors;
             

@@ -118,9 +118,49 @@
         public function attributes(): array{
             return ['id','nome', 'cpf', 'email', 'cep', 'numero', 'rua', 'bairro', 'cidade', 'estado', 'senha'];
         }
-        
 
-        
-        
-    
+        public function validatesInsert($object){
+            $errors=array();
+            if (!empty($object -> selectByParameter('email', $object -> email))){
+                array_push($errors, 'Este email já está cadastrado');
+                return [$errors];
+                }
+
+            if (!empty($object -> selectByParameter('cpf', $object -> cpf))){
+                array_push($errors,'O usuário com este cpf já está cadastrado');
+                return [$errors];
+                }
+            return $errors;
+        }
+
+        public function validatesUpdate($object){
+            $errors=array();
+
+            $user = $object -> selectByParameter('id', $object -> id);
+            if (empty($user)){
+                array_push($errors, 'O usuário não foi encontrado no sistema');
+                return [$errors];
+            }
+
+            $user = $object -> selectByParameter('email', $object -> email);
+            if (!empty($user)){
+                $user = $user[0];
+                if (($user -> email == $object -> email) && ($user -> id != $object -> id)){
+                    array_push($errors, 'Este email já está cadastrado');
+                    return [$errors];
+                    }
+            }
+            
+
+            $user = $object -> selectByParameter('cpf', $object -> cpf);
+            if (!empty($user)){
+                $user = $user[0];
+                if (($user -> cpf == $object -> cpf) && ($user -> id != $object -> id)){
+                    array_push($errors,'O usuário com este cpf já está cadastrado');
+                    return [$errors];
+                }
+            }
+            
+            return $errors;
+        }
     }
