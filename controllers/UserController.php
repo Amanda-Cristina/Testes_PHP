@@ -11,31 +11,24 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Exception\PartialDenormalizationException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validation;
 
 
 
 
-
-
-
-
-
-$config = require("config.php");
-
     class UserController{
         
-        protected $user;
+        protected User $user;
         protected $dados;
         
-        private Serializer $serializer;
-        private ValidatorInterface $validator;
+        
+       
 
         public function __construct()
         {
-            //$this -> user = new User();
-            $this -> dados = json_decode(file_get_contents("php://input"));
+            $this -> user = new User();
+            $this -> dados = file_get_contents("php://input");
+            
             
         }
             //$postdata = file_get_contents("php://input"); receber dados
@@ -44,51 +37,64 @@ $config = require("config.php");
             // var_dump($valores);
             // return $valores->value('idade');
 
+        
+
         public function inserirUser(){
-           
-            $encoders = [new JsonEncoder()];
-            $normalizers = [new ObjectNormalizer()];
-
-            $this->serializer = new Serializer($normalizers, $encoders);
-            //$this->validator = Validation::createValidatorBuilder()->enableAnnotationMapping()->getValidator();
-            $this->validator = Validation::createValidatorBuilder()
-                ->addMethodMapping('loadValidatorMetadata')
-                ->getValidator();
-            //$this -> user = $serializer->deserialize($this -> dados , User::class, 'json');
-
-
             
-            $this -> user = $this->serializer->deserialize($this -> dados, User::class, 'json');
-            $errors = $this->validator->validate($this -> user);
-            if (count($errors) > 0) {
-                foreach ($errors as $violation) {
-                    echo $violation->getMessage().'<br>';
+           
+            try{
+                $this -> user = $this -> user -> loadData($this -> dados, User::class);
+                $errors = $this -> user -> validates($this -> user);
+        
+                if(empty($errors))//se vazio insere
+                    
+                {   
+                    $this -> user -> insert();
+                    new Response(200, ["Inserção com sucesso"]);
+                   
+                }
+
+                else{
+                    new Response(400, $errors[0]);
                 }
             }
 
-            return $errors;
-                
-                
+            catch(Exception $e){
+                new Response(400, ['Falha na inserção. ' . $e->getMessage()]);
+               
+            }
+           
+      
         }
-            // try{
-            //     $this -> user -> insert($parameters);
-            // }
-
-            // catch(Exception $e){
-            //     echo $e->getMessage();
-            // }
            
-           
-             //return $this -> user -> nome;
             
             
            
         
 
         public function updateUser(){
-            //return $request;
-            //avaliar método
-            var_dump($this -> dados);
+            try{
+                $this -> user = $this -> user -> loadData($this -> dados, User::class);
+                $errors = $this -> user -> validates($this -> user);
+        
+                if(empty($errors))//se vazio insere
+                    
+                {   
+                    $this -> user -> update();
+                    new Response(200, ["Atualização com sucesso"]);
+                   
+                }
+
+                else{
+                    new Response(400, $errors[0]);
+                }
+            }
+
+            catch(Exception $e){
+                new Response(400, ['Falha na inserção. ' . $e->getMessage()]);
+               
+            }
+           
             
         }
 
@@ -100,14 +106,5 @@ $config = require("config.php");
             //avaliar método
         }
 
-        function input($index = null, $defaultValue = null){
-            if ($index !== null) {
-                return $this->request()->getInputHandler()->value($index, $defaultValue);
-            }
-            return $this->request()->getInputHandler();
-        }
-
-        function request(): Request{
-            return Router::request();
-        }
+        
     }

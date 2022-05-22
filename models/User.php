@@ -2,26 +2,104 @@
     use JMS\Serializer\Annotation as Serializer;
     use Symfony\Component\Validator\Constraints\NotBlank;
     use Symfony\Component\Validator\Mapping\ClassMetadata;
+    use Symfony\Component\Validator\Constraints as Assert;
     
 
 
     class User extends Query{
+
+        public $id;
        
-        public $nome;
-        protected $cpf;
-        protected $email;
-        protected $telefone;
-        protected $cep;
-        protected $numero;
-        protected $rua;
-        protected $bairro;
-        protected $cidade;
-        protected $estado;
         /**
-         * @Assert\NotNull
-         * @Assert\NotBlank()
+         * @var string
+         * @Assert\NotBlank(message="O campo nome não pode estar vazio")
+         * @Assert\Regex(
+         * pattern = "/^[a-z ]+$/i",
+         * message="O campo nome {{ value }} só pode conter letras"
+        * )
          */
-        protected $senha;
+        public $nome;
+        
+        /**
+         * @var string
+         * @Assert\NotBlank(message="O campo cpf não pode estar vazio")
+         * @Assert\Regex(
+         * pattern = "/^(\d{3}\.){2}\d{3}\-\d{2}$/",
+         * message="O campo cpf {{ value }}  está inválido"
+         * )
+         */
+        public $cpf;
+
+         /**
+         * @var string
+         * @Assert\Email(
+         * message = "O email '{{ value }}' não é um email válido.")
+         * @Assert\NotBlank(message="O campo email não pode estar vazio")
+         */  
+        public $email;
+
+        /**
+         * @var string
+         * @Assert\Regex(
+         * pattern="/^(\d{5}-\d{3}$)/",
+         * message="O campo cep {{ value }}  está inválido"
+        * )
+         * @Assert\NotBlank(message="O campo cep não pode estar vazio")
+         */
+        public $cep;
+
+        /**
+         * @var numeric
+         * @Assert\NotBlank(message="O campo número não pode estar vazio")
+         * @Assert\Regex(
+         * pattern="/^[0-9]+$/",
+         * message="O campo númeo {{ value }} só pode conter números."
+        * )         
+         */
+        public $numero;
+
+        /**
+         * @var string
+         * @Assert\NotBlank(message="O campo rua não pode estar vazio")
+         * @Assert\Type("string", message="O campo rua {{ value }}  está inválido")
+         */ 
+        public $rua;
+
+        
+         /**
+         * @var string
+         * @Assert\NotBlank(message="O campo bairro não pode estar vazio")
+         * @Assert\Type("string", message="O campo bairro {{ value }}  está inválido")
+         * 
+         */
+        public $bairro;
+
+        /**
+         * @var string
+         * @Assert\NotBlank(message="O campo cidade não pode estar vazio")
+         * @Assert\Type("string", message="O campo cidade {{ value }}  está inválido")
+         * 
+         */
+        public $cidade;
+        
+        /**
+         * @var string
+         * @Assert\NotBlank(message="O campo estado não pode estar vazio")
+         * @Assert\Type("string", message="O campo estado {{ value }}  está inválido")
+         * 
+         */
+        public $estado;
+
+        /**
+         * @var string
+         * @Assert\NotBlank(message="O campo senha não pode estar vazio")
+         * @Assert\Length(
+         * min = 6,    
+         * minMessage = "Sua senha deve conter mais do que {{ limit }} caracteres"
+         * )
+         */
+        public $senha;
+
         public $table;
         
 
@@ -37,16 +115,12 @@
             
         }
 
-        public function set($data) {
-            foreach ($data AS $key => $value) $this->{$key} = $value;
+        public function attributes(): array{
+            return ['id','nome', 'cpf', 'email', 'cep', 'numero', 'rua', 'bairro', 'cidade', 'estado', 'senha'];
         }
+        
 
-        public static function loadValidatorMetadata(ClassMetadata $metadata)
-        {
-            $metadata->addPropertyConstraint('senha', new NotBlank());//front, 
-
-            //null, tipo (int, float, string)/, duplicação (id, nome, cpf, email)
-            //cpf, nome, cep
-        }
+        
+        
     
     }

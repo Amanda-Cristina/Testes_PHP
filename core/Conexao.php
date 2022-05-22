@@ -13,7 +13,8 @@
         }
 
         public function Conectar() {
-            $options = array(PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING);
+            $options = array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION);
+            
             try{
                 return new PDO(
                     $this -> host.';dbname='.$this -> banco,
